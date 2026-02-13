@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Devotional Website</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body, html {
+  height:100%; width:100%;
+  font-family: Arial,sans-serif;
+  overflow:hidden;
+  position:relative;
+  background:#000;
+}
+
+.background-container {
+  position:absolute; top:0; left:0; width:100%; height:100%;
+  background: url('hands-apart.jpg') center center / cover no-repeat;
+  transition: background 1s ease, transform 1s ease;
+  z-index:0;
+}
+
+.overlay {
+  position:absolute; inset:0;
+  background: rgba(0,0,0,0.25);
+  z-index:1;
+}
+
+.glow {
+  position:absolute; inset:0;
+  pointer-events:none;
+  opacity:0;
+  box-shadow: inset 0 0 120px rgba(255,200,150,0.45);
+  transition: opacity 1s ease;
+  z-index:2;
+}
+.glow.active { opacity:1; }
+
+.container {
+  position:relative;
+  z-index:3;
+  max-width: 80%;
+  text-align:center;
+  margin:auto;
+  padding:20px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#fff;
+}
+
+.text-wrapper {
+  max-width: 60%;
+  margin:auto;
+  padding:10px 20px;
+  background: rgba(0,0,0,0.15);
+  border-radius:15px;
+}
+
+h1, .blessing p {
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+  line-height:1.3;
+}
+
+.btn {
+  padding: 14px 28px;
+  font-size: clamp(0.9rem,1.5vw,1.2rem);
+  margin:12px;
+  border:none;
+  border-radius:50px;
+  cursor:pointer;
+  transition: transform 0.2s ease;
+}
+
+.btn.haan { background-color:#ff69b4; color:#fff; }
+.btn.nahin { background-color:#add8e6; color:#000; }
+
+.blessing {
+  display:none;
+  line-height:1.5;
+  margin-top:20px;
+}
+.blessing p {
+  opacity:0;
+  transform:translateY(20px);
+  transition: opacity 1s ease, transform 1s ease;
+  font-size: clamp(1rem,1.8vw,1.5rem);
+}
+
+.blessing p.visible {
+  opacity:1;
+  transform:translateY(0);
+}
+
+.petal {
+  position:absolute;
+  top:-20px;
+  pointer-events:none;
+  animation: fall linear infinite;
+  opacity:0.8;
+  z-index:2;
+  transform: translateX(var(--drift, 0px));
+}
+
+@keyframes fall {
+  0% { transform: translate(0, -20px) rotate(0deg); opacity:0.8; }
+  100% { transform: translate(30px, 110vh) rotate(360deg); opacity:0.8; }
+}
+
+@media(max-width:768px){
+  .text-wrapper { max-width:90%; padding:10px 15px; }
+  h1, .blessing p { font-size: clamp(1rem,5vw,1.8rem); }
+}
+</style>
+</head>
+<body>
+
+<div class="background-container" id="bg"></div>
+<div class="overlay"></div>
+<div class="glow" id="glow"></div>
+
+<div class="container" id="mainContent">
+  <div class="text-wrapper">
+    <h1>
+      कहते हैं जब दिल साथ चलते हैं, तब महादेव सुनते हैं…<br>
+      क्या ख़याल है, साथ चला जाए?
+    </h1>
+    <button class="btn haan" id="yesBtn">हाँ</button>
+    <button class="btn nahin" id="noBtn">नहीं</button>
+  </div>
+</div>
+
+<div class="container blessing" id="blessingContent">
+  <div class="text-wrapper">
+    <p>मैं नहीं जानता आगे क्या होगा,</p>
+    <p>पर तुम्हारे साथ चलना अच्छा लगता है।</p>
+    <p>तुम्हारा साथ होना अच्छा लगता है,</p>
+    <p>अच्छा लगता है जब तुम गुस्सा करती हो,</p>
+    <p>अच्छा लगता है अब तुम खुश रहती हो, </p>
+    <p>तो अगर सब इतना अच्छा लगता है, </p>
+    <p>तो महादेव के आशीर्वाद से सब कितना अच्छा लगने लगेगा।</p>
+  </div>
+</div>
+
+<audio id="shivMusic" src="shiv-music.mp3" loop></audio>
+
+<script>
+const bg = document.getElementById("bg");
+const yesBtn = document.getElementById("yesBtn");
+const noBtn = document.getElementById("noBtn");
+const mainContent = document.getElementById("mainContent");
+const blessingContent = document.getElementById("blessingContent");
+const shivMusic = document.getElementById("shivMusic");
+const glow = document.getElementById("glow");
+
+let petalInterval;
+
+// Petals
+function createPetal(){
+  const petal=document.createElement("div");
+  petal.className="petal";
+  petal.innerText="🌸";
+
+  // Random horizontal start
+  petal.style.left = Math.random()*100 + "vw";
+
+  // Random font size
+  petal.style.fontSize=(Math.random()*12+12)+"px";
+
+  // Random duration
+  const duration = Math.random()*5+5;
+  petal.style.animationDuration = duration+"s";
+
+  // Random drift
+  const drift = (Math.random()*40-20);
+  petal.style.setProperty('--drift', drift+'px');
+
+  document.body.appendChild(petal);
+  setTimeout(()=>petal.remove(), duration*1000);
+}
+petalInterval = setInterval(createPetal, 700);
+
+// Background handler for responsive
+function setBackground(imageUrl){
+  if(window.innerWidth >= 1024){
+    bg.style.backgroundSize="cover";
+  } else {
+    bg.style.backgroundSize="contain";
+  }
+  bg.style.backgroundPosition="center center";
+  bg.style.backgroundImage = `url('${imageUrl}')`;
+}
+
+// Parallax effect
+document.addEventListener("mousemove",(e)=>{
+  const x=e.clientX/window.innerWidth;
+  const y=e.clientY/window.innerHeight;
+  bg.style.transform=`translate(${x*20-10}px, ${y*20-10}px) scale(1.02)`;
+});
+
+ // Yes click
+yesBtn.addEventListener("click", ()=>{
+  setBackground('hands-joined.jpg');
+  glow.classList.add("active");
+  mainContent.style.display="none";
+  blessingContent.style.display="block";
+
+  // Music fade-in faster
+  shivMusic.volume = 0;
+  shivMusic.play();
+  let vol = 0;
+  const fadeIn = setInterval(()=>{
+    vol += 0.05;  // faster increment than previous 0.02
+    shivMusic.volume = Math.min(vol, 0.3);
+    if(vol >= 0.3) clearInterval(fadeIn);
+  },100);
+
+  // Blessings fade-in slower
+  const lines = blessingContent.querySelectorAll("p");
+  lines.forEach((line, index)=>{
+    setTimeout(()=>{
+      line.classList.add("visible");
+      line.style.transition = "opacity 2s ease, transform 2s ease"; // slower than 1s
+    }, index * 1800); // increase delay for more gentle appearance
+  });
+
+  setTimeout(()=>clearInterval(petalInterval),2000);
+});
+// No button wobble
+noBtn.addEventListener("mousemove",(e)=>{
+  const offsetX = (Math.random()*20-10);
+  const offsetY = (Math.random()*20-10);
+  noBtn.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+});
+noBtn.addEventListener("mouseleave",()=> noBtn.style.transform="translate(0,0)");
+
+// Adjust background on resize
+window.addEventListener("resize",()=>{
+  const currentBg = bg.style.backgroundImage.includes("hands-joined") ? "hands-joined.jpg" : "hands-apart.jpg";
+  setBackground(currentBg);
+});
+</script>
+</body>
+</html>
